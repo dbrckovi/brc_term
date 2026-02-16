@@ -1,0 +1,5 @@
+# theme = "bogster"
+
+[keys.normal]
+F4 = ":sh ./build.sh"
+F5 = ":sh ./run.sh"
