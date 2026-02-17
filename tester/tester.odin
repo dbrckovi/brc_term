@@ -7,7 +7,7 @@ import "core:time"
 
 main :: proc() {
 
-	init_settings: brc_common.TerminalSettings = {
+	init_settings: brc_common.TerminalInitializationSettings = {
 		enable_ctrl_c = true,
 	}
 
@@ -20,6 +20,7 @@ main :: proc() {
 
 	// simple_test()
 	frame_rate_test()
+	bt.clear_screen()
 }
 
 simple_test :: proc() {
@@ -42,18 +43,34 @@ frame_rate_test :: proc() {
 	start := time.now()
 	frames: int
 
+	bt.hide_cursor()
+
 	for {
 		duration := time.diff(start, time.now())
-		if duration > time.Second * 10 do break
+		if duration > time.Second * 3 do break
 
-		bt.start_frame()
-		bt.clear_screen()
+		size, error := bt.start_frame()
+		if error != {} do panic(fmt.tprint(error))
+		// bt.clear_screen()
 
+		for x: u32 = 0; x < size.x; x += 1 {
+			for y: u32 = 0; y < size.y; y += 1 {
+				bt.set_fg_color({u8(x), u8(y), 0})
+				bt.write_rune('.')
+			}
+		}
+
+		bt.set_cursor_position(0, 0)
 		seconds := time.duration_seconds(duration)
 		bt.write(fmt.tprint(f64(frames) / seconds))
+		bt.set_cursor_position(20, 0)
+		bt.write(fmt.tprint(size))
+
 		bt.end_frame()
 		frames += 1
 		free_all(context.temp_allocator)
 	}
+
+	bt.show_cursor()
 }
 

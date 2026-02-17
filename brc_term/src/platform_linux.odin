@@ -15,7 +15,7 @@ get_terminal_state :: proc() -> (posix.termios, bool) {
 
 // sets terminal to a state suitable for TUI
 @(private)
-init_terminal_state :: proc(settings: brc_common.TerminalSettings) -> Error {
+init_terminal_state :: proc(settings: brc_common.TerminalInitializationSettings) -> Error {
 	previous_state, get_state_ok := get_terminal_state()
 	if !get_state_ok do return .GET_TERMINAL_STATE_FAILED
 
@@ -40,9 +40,9 @@ init_terminal_state :: proc(settings: brc_common.TerminalSettings) -> Error {
 // reverts terminal to a state it was before it was initialized
 @(private)
 reset_terminal_state :: proc() -> Error {
-	if !is_initialized() do return .TERMINAL_NOT_INITIALIZED
+	if !_ts.initialized do return .TERMINAL_NOT_INITIALIZED
 
-	if posix.tcsetattr(posix.STDIN_FILENO, .TCSAFLUSH, &_original_terminal_state) != .OK {
+	if posix.tcsetattr(posix.STDIN_FILENO, .TCSAFLUSH, &_ts.original_termios) != .OK {
 		return .SET_TERMINAL_STATE_FAILED
 	}
 	return .NONE

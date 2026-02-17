@@ -10,3 +10,5 @@ import "core:terminal/ansi"
 ANY_EVENT :: ansi.CSI + "?1003"
 SGR_MOUSE :: ansi.CSI + "?1006"
 
+TRUE_COLOR :: "2"
+
