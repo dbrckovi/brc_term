@@ -3,6 +3,7 @@ package tester
 import bt "../brc_term/src"
 import brc_common "../brc_term/src/brc_common"
 import "core:fmt"
+import "core:strings"
 import "core:time"
 
 main :: proc() {
@@ -19,8 +20,9 @@ main :: proc() {
 	defer bt.disable_mouse()
 
 	// simple_test()
-	// frame_rate_test()
-	blocking_input_test()
+	//frame_rate_test()
+	//blocking_input_test()
+	non_blocking_input_test()
 
 	// bt.clear_screen()
 }
@@ -49,14 +51,14 @@ frame_rate_test :: proc() {
 
 	for {
 		duration := time.diff(start, time.now())
-		if duration > time.Second * 2 do break
+		if duration > time.Second * 10 do break
 
 		size, error := bt.start_frame()
 		if error != {} do panic(fmt.tprint(error))
 		// bt.clear_screen()
 
-		for x: u32 = 0; x < size.x; x += 1 {
-			for y: u32 = 0; y < size.y; y += 1 {
+		for x: uint = 0; x < size.x; x += 1 {
+			for y: uint = 0; y < size.y; y += 1 {
 				bt.set_fg_color({u8(255 - x), u8(255 - y), u8(x + y)})
 				bt.write_rune('.')
 			}
@@ -84,5 +86,45 @@ blocking_input_test :: proc() {
 		bt.write(input)
 		bt.end_frame()
 	}
+}
+
+non_blocking_input_test :: proc() {
+	start := time.now()
+
+	bt.hide_cursor()
+
+	input: strings.Builder
+	strings.builder_init(&input)
+
+	for {
+		duration := time.diff(start, time.now())
+		if duration > time.Second * 10 do break
+
+		size, error := bt.start_frame()
+		if error != {} do panic(fmt.tprint(error))
+		bt.clear_screen()
+
+		bt.set_cursor_position(0, 0)
+
+		s, read_error := bt.read_string(context.temp_allocator)
+		if len(s) > 0 {
+			strings.write_string(&input, s)
+		}
+
+		for b in transmute([]byte)strings.to_string(input) {
+			bt.write(fmt.tprintf("%x ", b))
+		}
+
+		bt.set_cursor_position(0, size.y - 1)
+
+		seconds := time.duration_seconds(duration)
+		bt.write(fmt.tprint(duration))
+
+
+		bt.end_frame()
+		free_all(context.temp_allocator)
+	}
+
+	bt.show_cursor()
 }
 

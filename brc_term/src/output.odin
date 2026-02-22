@@ -6,7 +6,7 @@ import "core:os"
 import "core:strings"
 
 // Clears buffers of the last frame and enables drawing/output operations
-start_frame :: proc() -> ([2]u32, Error) {
+start_frame :: proc() -> ([2]uint, Error) {
 	if !_ts.initialized do return {0, 0}, .TERMINAL_NOT_INITIALIZED
 	if _ts.frame_started do return {0, 0}, .FRAME_ALREADY_STARTED
 	strings.builder_reset(&_ts.frame_builder)

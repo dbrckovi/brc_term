@@ -50,8 +50,8 @@ reset_terminal_state :: proc() -> Error {
 }
 
 // gets current width and height of terminal buffer (x = width, y = height) in characters
-get_terminal_size :: proc() -> ([2]u32, Error) {
-	ret: [2]u32
+get_terminal_size :: proc() -> ([2]uint, Error) {
+	ret: [2]uint
 
 	winsize :: struct {
 		ws_row, ws_col:       c.ushort,
@@ -63,11 +63,12 @@ get_terminal_size :: proc() -> ([2]u32, Error) {
 		return ret, .GET_WINDOW_SIZE_FAILED
 	}
 
-	ret.x = u32(w.ws_col)
-	ret.y = u32(w.ws_row)
+	ret.x = uint(w.ws_col)
+	ret.y = uint(w.ws_row)
 	return ret, .NONE
 }
 
+// Reads raw string from stdin buffer. BLocks if input is empty.
 @(private)
 read_raw_blocking :: proc() -> (string, Error) {
 	bytes_read, err := os.read(os.stdin, _ts.input_buffer[:])
@@ -77,8 +78,20 @@ read_raw_blocking :: proc() -> (string, Error) {
 	return cast(string)_ts.input_buffer[:bytes_read], .NONE
 }
 
+// Returns true if there is something in stdin buffer
 @(private)
-read_raw_non_blocking :: proc() {
+has_input :: proc() -> (bool, Error) {
+	stdin_pollfd := posix.pollfd {
+		fd     = posix.STDIN_FILENO,
+		events = {.IN},
+	}
 
+	ret := posix.poll(&stdin_pollfd, 1, 1)
+
+	if ret < 0 {
+		return false, .OS_POLL_FAILED
+	} else {
+		return ret > 0, .NONE
+	}
 }
 

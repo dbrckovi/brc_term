@@ -14,7 +14,7 @@ initialize :: proc {
 
 // Initializes the terminal with default settings
 // @returns size of the terminal (x=width, y=height)
-initialize_default :: proc() -> ([2]u32, Error) {
+initialize_default :: proc() -> ([2]uint, Error) {
 	settings: brc_common.TerminalInitializationSettings = {
 		enable_ctrl_c = true,
 	}
@@ -27,10 +27,10 @@ initialize_default :: proc() -> ([2]u32, Error) {
 initialize_with_settings :: proc(
 	settings: brc_common.TerminalInitializationSettings,
 ) -> (
-	[2]u32,
+	[2]uint,
 	Error,
 ) {
-	ret: [2]u32
+	ret: [2]uint
 
 	if _ts.initialized do return ret, .TERMINAL_ALREADY_INITIALIZED
 

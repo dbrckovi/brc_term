@@ -13,5 +13,6 @@ Error :: enum {
 	INVALID_WHILE_FRAME_STARTED, // Operation may not be called if frame is started
 	OS_READ_FAILED, // Occurs when os.read returns an error. TODO: replace
 	ALLOCATION_ERROR, // Occurs when some allocation fails. TODO: replace
+	OS_POLL_FAILED, // Occurs when os.poll function return error. TODO: replace
 }
 
