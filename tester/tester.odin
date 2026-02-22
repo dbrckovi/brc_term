@@ -111,10 +111,7 @@ non_blocking_input_test :: proc() {
 			strings.write_string(&input, s)
 		}
 
-		for b in transmute([]byte)strings.to_string(input) {
-			bt.write(fmt.tprintf("%x ", b))
-		}
-
+		paint_sequence(transmute([]byte)strings.to_string(input))
 		bt.set_cursor_position(0, size.y - 1)
 
 		seconds := time.duration_seconds(duration)
@@ -126,5 +123,83 @@ non_blocking_input_test :: proc() {
 	}
 
 	bt.show_cursor()
+}
+
+paint_sequence :: proc(sequence: []byte) {
+	for b in sequence {
+		if b < 32 {
+			bt.set_fg_color({255, 200, 150})
+
+			switch b {
+			case 0:
+				bt.write("NUL ")
+			case 1:
+				bt.write("SOH ")
+			case 2:
+				bt.write("STX ")
+			case 3:
+				bt.write("ETX ")
+			case 4:
+				bt.write("EOT ")
+			case 5:
+				bt.write("ENQ ")
+			case 6:
+				bt.write("ACK ")
+			case 7:
+				bt.write("BEL ")
+			case 8:
+				bt.write("BS ")
+			case 9:
+				bt.write("HT ")
+			case 10:
+				bt.write("LF ")
+			case 11:
+				bt.write("VT ")
+			case 12:
+				bt.write("FF ")
+			case 13:
+				bt.write("CR ")
+			case 14:
+				bt.write("SO ")
+			case 15:
+				bt.write("SI ")
+			case 16:
+				bt.write("DLE ")
+			case 17:
+				bt.write("DC1 ")
+			case 18:
+				bt.write("DC2 ")
+			case 19:
+				bt.write("DC3 ")
+			case 20:
+				bt.write("DC4 ")
+			case 21:
+				bt.write("NAK ")
+			case 22:
+				bt.write("SYN ")
+			case 23:
+				bt.write("ETB ")
+			case 24:
+				bt.write("CAN ")
+			case 25:
+				bt.write("EM ")
+			case 26:
+				bt.write("SUB ")
+			case 27:
+				bt.write("ESC ")
+			case 28:
+				bt.write("FS ")
+			case 29:
+				bt.write("GS ")
+			case 30:
+				bt.write("RS ")
+			case 31:
+				bt.write("US ")
+			}
+		} else {
+			bt.set_fg_color({255, 255, 255})
+			bt.write(fmt.tprintf("%v ", rune(b)))
+		}
+	}
 }
 

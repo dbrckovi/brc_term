@@ -48,7 +48,6 @@ initialize_with_settings :: proc(
 	strings.builder_init(&_ts.frame_builder)
 	_ts.initialized = true
 
-
 	return ret, .NONE
 }
 
