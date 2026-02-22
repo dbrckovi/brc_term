@@ -2,6 +2,7 @@ package brc_term
 
 import "brc_common"
 import "core:c"
+import "core:os"
 import "core:sys/linux"
 import "core:sys/posix"
 
@@ -65,5 +66,19 @@ get_terminal_size :: proc() -> ([2]u32, Error) {
 	ret.x = u32(w.ws_col)
 	ret.y = u32(w.ws_row)
 	return ret, .NONE
+}
+
+@(private)
+read_raw_blocking :: proc() -> (string, Error) {
+	bytes_read, err := os.read(os.stdin, _ts.input_buffer[:])
+	if err != nil || bytes_read == 0 {
+		return {}, .OS_READ_FAILED
+	}
+	return cast(string)_ts.input_buffer[:bytes_read], .NONE
+}
+
+@(private)
+read_raw_non_blocking :: proc() {
+
 }
 

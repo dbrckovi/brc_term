@@ -11,5 +11,7 @@ Error :: enum {
 	FRAME_NOT_STARTED, // Frame must be started before operation can be called
 	FRAME_ALREADY_STARTED, // Frame may not be started before previous frame ended
 	INVALID_WHILE_FRAME_STARTED, // Operation may not be called if frame is started
+	OS_READ_FAILED, // Occurs when os.read returns an error. TODO: replace
+	ALLOCATION_ERROR, // Occurs when some allocation fails. TODO: replace
 }
 

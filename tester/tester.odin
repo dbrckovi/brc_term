@@ -19,8 +19,10 @@ main :: proc() {
 	defer bt.disable_mouse()
 
 	// simple_test()
-	frame_rate_test()
-	bt.clear_screen()
+	// frame_rate_test()
+	blocking_input_test()
+
+	// bt.clear_screen()
 }
 
 simple_test :: proc() {
@@ -47,7 +49,7 @@ frame_rate_test :: proc() {
 
 	for {
 		duration := time.diff(start, time.now())
-		if duration > time.Second * 3 do break
+		if duration > time.Second * 2 do break
 
 		size, error := bt.start_frame()
 		if error != {} do panic(fmt.tprint(error))
@@ -55,7 +57,7 @@ frame_rate_test :: proc() {
 
 		for x: u32 = 0; x < size.x; x += 1 {
 			for y: u32 = 0; y < size.y; y += 1 {
-				bt.set_fg_color({u8(x), u8(y), 0})
+				bt.set_fg_color({u8(255 - x), u8(255 - y), u8(x + y)})
 				bt.write_rune('.')
 			}
 		}
@@ -72,5 +74,15 @@ frame_rate_test :: proc() {
 	}
 
 	bt.show_cursor()
+}
+
+blocking_input_test :: proc() {
+	for i in 0 ..= 9 {
+		bt.start_frame()
+		input, err := bt.wait_string()
+		bt.write(", got: ")
+		bt.write(input)
+		bt.end_frame()
+	}
 }
 

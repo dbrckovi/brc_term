@@ -16,5 +16,6 @@ TerminalState :: struct {
 	frame_started:    bool, // Indicates that frame has been started.
 	last_fg_color:    [3]u8,
 	last_bg_color:    [3]u8,
+	input_buffer:     [512]byte, // Receives raw input from os.read
 }
 
