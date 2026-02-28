@@ -46,15 +46,22 @@ initialize_with_settings :: proc(
 	ret = size
 
 	strings.builder_init(&_ts.frame_builder)
+	_ts.protocol = .Ansi
 	_ts.initialized = true
 
 	return ret, .NONE
+}
+
+// returns current termina state and other various information
+get_terminal_info :: proc() -> brc_common.TerminalState {
+	return _ts
 }
 
 // Deinitializes the terminal
 deinitialize :: proc() -> Error {
 	if !_ts.initialized do return .TERMINAL_NOT_INITIALIZED
 	reset_terminal_state() or_return
+	_ts.protocol = .None
 	_ts.original_termios = {}
 	_ts.initialized = false
 	return .NONE

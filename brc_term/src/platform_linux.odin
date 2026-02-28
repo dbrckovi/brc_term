@@ -70,12 +70,15 @@ get_terminal_size :: proc() -> ([2]uint, Error) {
 
 // Reads raw string from stdin buffer. BLocks if input is empty.
 @(private)
-read_raw_blocking :: proc() -> (string, Error) {
-	bytes_read, err := os.read(os.stdin, _ts.input_buffer[:])
+read_raw_blocking :: proc() -> (brc_common.InputBuffer, Error) {
+	buffer: brc_common.InputBuffer
+
+	bytes_read, err := os.read(os.stdin, buffer.data[:])
 	if err != nil || bytes_read == 0 {
 		return {}, .OS_READ_FAILED
 	}
-	return cast(string)_ts.input_buffer[:bytes_read], .NONE
+	buffer.length = bytes_read
+	return buffer, .NONE
 }
 
 // Returns true if there is something in stdin buffer
@@ -86,7 +89,7 @@ has_input :: proc() -> (bool, Error) {
 		events = {.IN},
 	}
 
-	ret := posix.poll(&stdin_pollfd, 1, 1)
+	ret := posix.poll(&stdin_pollfd, 1, 0)
 
 	if ret < 0 {
 		return false, .OS_POLL_FAILED

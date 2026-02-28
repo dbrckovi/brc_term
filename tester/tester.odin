@@ -20,11 +20,9 @@ main :: proc() {
 	defer bt.disable_mouse()
 
 	// simple_test()
-	//frame_rate_test()
-	//blocking_input_test()
-	non_blocking_input_test()
-
-	// bt.clear_screen()
+	// frame_rate_test()
+	blocking_input_test()
+	// non_blocking_input_test()
 }
 
 simple_test :: proc() {
@@ -71,6 +69,16 @@ frame_rate_test :: proc() {
 		bt.write(fmt.tprint(size))
 
 		bt.end_frame()
+
+		input, input_error := bt.get_input()
+		if input_error != .NONE {
+			panic(fmt.tprint(input_error))
+		}
+
+		if input != nil {
+			break
+		}
+
 		frames += 1
 		free_all(context.temp_allocator)
 	}
@@ -79,12 +87,32 @@ frame_rate_test :: proc() {
 }
 
 blocking_input_test :: proc() {
-	for i in 0 ..= 9 {
+	for {
 		bt.start_frame()
-		input, err := bt.wait_string()
-		bt.write(", got: ")
-		bt.write(input)
-		bt.end_frame()
+		defer bt.end_frame()
+
+		input, err := bt.wait_input()
+		bt.clear_screen()
+
+		if err != .NONE {
+			panic(fmt.tprint("Input error", err))
+		}
+
+		if kb, ok := input.(brc_common.KeyboardEvent); ok {
+			bt.write(brc_common.to_string(&kb))
+			bt.write("\r\n")
+
+			if (kb.key == .Esc) {
+				bt.write("\r\n")
+				bt.write("Program exit")
+				bt.write("\r\n")
+				break
+			}
+
+		} else {
+			bt.write("Unknown event!")
+			bt.write("\r\n")
+		}
 	}
 }
 
@@ -93,8 +121,8 @@ non_blocking_input_test :: proc() {
 
 	bt.hide_cursor()
 
-	input: strings.Builder
-	strings.builder_init(&input)
+	sequence: strings.Builder
+	strings.builder_init(&sequence)
 
 	for {
 		duration := time.diff(start, time.now())
@@ -106,12 +134,13 @@ non_blocking_input_test :: proc() {
 
 		bt.set_cursor_position(0, 0)
 
-		s, read_error := bt.read_string(context.temp_allocator)
-		if len(s) > 0 {
-			strings.write_string(&input, s)
+		input, read_error := bt.get_input()
+
+		if input != nil {
+			strings.write_string(&sequence, fmt.tprint(input))
 		}
 
-		paint_sequence(transmute([]byte)strings.to_string(input))
+		paint_sequence(transmute([]byte)strings.to_string(sequence))
 		bt.set_cursor_position(0, size.y - 1)
 
 		seconds := time.duration_seconds(duration)
