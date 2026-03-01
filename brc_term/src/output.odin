@@ -1,12 +1,13 @@
 package brc_term
 
 import "brc_ansi"
+import bc "brc_common"
 import "core:fmt"
 import "core:os"
 import "core:strings"
 
 // Clears buffers of the last frame and enables drawing/output operations
-start_frame :: proc() -> ([2]uint, Error) {
+start_frame :: proc() -> ([2]uint, bc.Error) {
 	if !_ts.initialized do return {0, 0}, .TERMINAL_NOT_INITIALIZED
 	if _ts.frame_started do return {0, 0}, .FRAME_ALREADY_STARTED
 	strings.builder_reset(&_ts.frame_builder)
@@ -15,7 +16,7 @@ start_frame :: proc() -> ([2]uint, Error) {
 }
 
 // Sends frame buffer to the stdout (screen) and disables drawing/output operations
-end_frame :: proc() -> Error {
+end_frame :: proc() -> bc.Error {
 	if !_ts.initialized do return .TERMINAL_NOT_INITIALIZED
 	if !_ts.frame_started do return .FRAME_NOT_STARTED
 	fmt.print(strings.to_string(_ts.frame_builder))
@@ -25,7 +26,7 @@ end_frame :: proc() -> Error {
 }
 
 // Enables mouse support
-enable_mouse :: proc() -> Error {
+enable_mouse :: proc() -> bc.Error {
 	if !_ts.initialized do return .TERMINAL_NOT_INITIALIZED
 	if _ts.frame_started do return .INVALID_WHILE_FRAME_STARTED
 	brc_ansi.enable_mouse_direct()
@@ -33,7 +34,7 @@ enable_mouse :: proc() -> Error {
 }
 
 // Disables mouse support
-disable_mouse :: proc() -> Error {
+disable_mouse :: proc() -> bc.Error {
 	if !_ts.initialized do return .TERMINAL_NOT_INITIALIZED
 	if _ts.frame_started do return .INVALID_WHILE_FRAME_STARTED
 	brc_ansi.disable_mouse_direct()
@@ -50,7 +51,7 @@ clear_screen :: proc() {
 }
 
 // Moves the cursor to specified coordinates
-set_cursor_position :: proc(x, y: uint) -> Error {
+set_cursor_position :: proc(x, y: uint) -> bc.Error {
 	if !_ts.initialized do return .TERMINAL_NOT_INITIALIZED
 	if !_ts.frame_started do return .FRAME_NOT_STARTED
 	brc_ansi.set_cursor_position(&_ts.frame_builder, x, y)
@@ -74,7 +75,7 @@ hide_cursor :: proc() {
 }
 
 
-set_color :: proc(fg: [3]u8, bg: [3]u8) -> Error {
+set_color :: proc(fg: [3]u8, bg: [3]u8) -> bc.Error {
 	if !_ts.initialized do return .TERMINAL_NOT_INITIALIZED
 	if !_ts.frame_started do return .FRAME_NOT_STARTED
 
@@ -89,7 +90,7 @@ set_color :: proc(fg: [3]u8, bg: [3]u8) -> Error {
 	return .NONE
 }
 
-set_fg_color :: proc(fg: [3]u8) -> Error {
+set_fg_color :: proc(fg: [3]u8) -> bc.Error {
 	if !_ts.initialized do return .TERMINAL_NOT_INITIALIZED
 	if !_ts.frame_started do return .FRAME_NOT_STARTED
 
@@ -100,7 +101,7 @@ set_fg_color :: proc(fg: [3]u8) -> Error {
 	return .NONE
 }
 
-set_bg_color :: proc(bg: [3]u8) -> Error {
+set_bg_color :: proc(bg: [3]u8) -> bc.Error {
 	if !_ts.initialized do return .TERMINAL_NOT_INITIALIZED
 	if !_ts.frame_started do return .FRAME_NOT_STARTED
 
@@ -112,7 +113,7 @@ set_bg_color :: proc(bg: [3]u8) -> Error {
 }
 
 // Writes a single rune on current cursor location
-write_rune :: proc(r: rune) -> Error {
+write_rune :: proc(r: rune) -> bc.Error {
 	if !_ts.initialized do return .TERMINAL_NOT_INITIALIZED
 	if !_ts.frame_started do return .FRAME_NOT_STARTED
 	brc_ansi.write_rune(&_ts.frame_builder, r)
@@ -120,7 +121,7 @@ write_rune :: proc(r: rune) -> Error {
 }
 
 // Writes a string on current cursor location
-write :: proc(s: string) -> Error {
+write :: proc(s: string) -> bc.Error {
 	if !_ts.initialized do return .TERMINAL_NOT_INITIALIZED
 	if !_ts.frame_started do return .FRAME_NOT_STARTED
 	brc_ansi.write(&_ts.frame_builder, s)

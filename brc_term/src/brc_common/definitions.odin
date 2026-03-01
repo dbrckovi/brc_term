@@ -5,42 +5,118 @@ package brc_common
 import "core:fmt"
 import "core:strings"
 import "core:sys/posix"
-// import "core:terminal"
 
-KEY_CODE_ESC :: "\x1b"
-KEY_CODE_DELETE :: "\x7f"
-KEY_CODE_BACKSPACE :: "\x08"
-KEY_CODE_TAB :: "\x09"
-KEY_CODE_NULL :: "\x00"
-KEY_CODE_SPACE :: "\x20"
+// These are control characters ASCII table
+// I renamed them based on function they have in this library
+
+// ASCII control codes which are mapped to real keys
+single_key_control_code := map[rune]Key {
+	'\x1b' = .Esc,
+	'\x7f' = .Backspace,
+	'\x09' = .Tab,
+	'\x0d' = .Enter,
+}
+
+// ASCII control codes which are mapped to Ctrl+Key
+key_with_control_code := map[rune]Key {
+	'\x01' = .A,
+	'\x02' = .B,
+	'\x03' = .C,
+	'\x04' = .D,
+	'\x05' = .E,
+	'\x06' = .F,
+	'\x07' = .G,
+	'\x0a' = .J,
+	'\x0b' = .K,
+	'\x0c' = .L,
+	'\x0e' = .N,
+	'\x0f' = .O,
+	'\x10' = .P,
+	'\x11' = .Q,
+	'\x12' = .R,
+	'\x13' = .S,
+	'\x14' = .T,
+	'\x15' = .U,
+	'\x16' = .V,
+	'\x17' = .W,
+	'\x18' = .X,
+	'\x19' = .Y,
+	'\x1a' = .Z,
+	'\x1f' = .Slash,
+	'\x08' = .Backspace,
+	'\x00' = .Space,
+}
 
 rune_to_key := map[rune]Key {
-	'A' = .A,
-	'B' = .B,
-	'C' = .C,
-	'D' = .D,
-	'E' = .E,
-	'F' = .F,
-	'G' = .G,
-	'H' = .H,
-	'I' = .I,
-	'J' = .J,
-	'K' = .K,
-	'L' = .L,
-	'M' = .M,
-	'N' = .N,
-	'O' = .O,
-	'P' = .P,
-	'Q' = .Q,
-	'R' = .R,
-	'S' = .S,
-	'T' = .T,
-	'U' = .U,
-	'V' = .V,
-	'W' = .W,
-	'X' = .X,
-	'Y' = .Y,
-	'Z' = .Z,
+	'A'  = .A,
+	'B'  = .B,
+	'C'  = .C,
+	'D'  = .D,
+	'E'  = .E,
+	'F'  = .F,
+	'G'  = .G,
+	'H'  = .H,
+	'I'  = .I,
+	'J'  = .J,
+	'K'  = .K,
+	'L'  = .L,
+	'M'  = .M,
+	'N'  = .N,
+	'O'  = .O,
+	'P'  = .P,
+	'Q'  = .Q,
+	'R'  = .R,
+	'S'  = .S,
+	'T'  = .T,
+	'U'  = .U,
+	'V'  = .V,
+	'W'  = .W,
+	'X'  = .X,
+	'Y'  = .Y,
+	'Z'  = .Z,
+	'0'  = .Number0,
+	'1'  = .Number1,
+	'2'  = .Number2,
+	'3'  = .Number3,
+	'4'  = .Number4,
+	'5'  = .Number5,
+	'6'  = .Number6,
+	'7'  = .Number7,
+	'8'  = .Number8,
+	'9'  = .Number9,
+	'/'  = .Slash,
+	'\\' = .Backslash,
+	':'  = .Colon,
+	';'  = .Semicolon,
+	'\'' = .Single_Quote,
+	'\"' = .Double_Quote,
+	'.'  = .Period,
+	' '  = .Space,
+	'*'  = .Asterisk,
+	'`'  = .Backtick,
+	'$'  = .Dollar,
+	'!'  = .Exclamation,
+	'#'  = .Hash,
+	'%'  = .Percent,
+	'&'  = .Ampersand,
+	'_'  = .Underscore,
+	'^'  = .Caret,
+	','  = .Comma,
+	'|'  = .Pipe,
+	'@'  = .At,
+	'~'  = .Tilde,
+	'<'  = .Less_Than,
+	'>'  = .Greater_Than,
+	'?'  = .Question_Mark,
+	'-'  = .Minus,
+	'+'  = .Plus,
+	'='  = .Equal,
+	'('  = .Open_Bracket,
+	')'  = .Close_Bracket,
+	'{'  = .Open_Curly_Bracket,
+	'}'  = .Close_Curly_Bracket,
+	'['  = .Open_Square_Bracket,
+	']'  = .Close_Square_Bracket,
 }
 
 // Defines settings for terminal initialization
@@ -72,12 +148,20 @@ InputEvent :: union {
 }
 
 KeyboardEvent :: struct {
-	key:        Key,
-	buffer:     InputBuffer,
-	control:    bool,
-	shift:      bool,
-	is_letter:  bool,
-	is_graphic: bool,
+	key:                Key,
+	buffer:             InputBuffer,
+	holding_control:    bool,
+	holding_shift:      bool,
+	is_escape_sequence: bool,
+	is_graphic:         bool,
+	is_letter:          bool,
+	is_digit:           bool,
+	is_number:          bool,
+	is_printable:       bool,
+	is_control:         bool,
+	is_space:           bool,
+	is_punctuation:     bool,
+	is_symbol:          bool,
 }
 
 MouseEvent :: struct {
@@ -94,6 +178,39 @@ Key :: enum {
 	Backspace,
 	Tab,
 	Space,
+	Enter,
+	Slash,
+	Backslash,
+	Colon,
+	Semicolon,
+	Single_Quote,
+	Double_Quote,
+	Period,
+	Asterisk,
+	Backtick,
+	Dollar,
+	Exclamation,
+	Hash,
+	Percent,
+	Ampersand,
+	Underscore,
+	Caret,
+	Comma,
+	Pipe,
+	At,
+	Tilde,
+	Less_Than,
+	Greater_Than,
+	Question_Mark,
+	Minus,
+	Plus,
+	Equal,
+	Open_Bracket,
+	Close_Bracket,
+	Open_Curly_Bracket,
+	Close_Curly_Bracket,
+	Open_Square_Bracket,
+	Close_Square_Bracket,
 	A,
 	B,
 	C,
@@ -120,38 +237,42 @@ Key :: enum {
 	X,
 	Y,
 	Z,
+	Number0,
+	Number1,
+	Number2,
+	Number3,
+	Number4,
+	Number5,
+	Number6,
+	Number7,
+	Number8,
+	Number9,
+	Arrow_Left,
+	Arrow_Right,
+	Arrow_Up,
+	Arrow_Down,
+	Page_Up,
+	Page_Down,
+	Home,
+	End,
+	Insert,
+	Delete,
+	F1,
+	F2,
+	F3,
+	F4,
+	F5,
+	F6,
+	F7,
+	F8,
+	F9,
+	F10,
+	F11,
+	F12,
 }
 
 InputBuffer :: struct {
 	data:   [512]byte,
 	length: int,
-}
-
-to_string :: proc {
-	keyboard_event_to_string,
-}
-
-keyboard_event_to_string :: proc(
-	event: ^KeyboardEvent,
-	allocator := context.temp_allocator,
-) -> string {
-	builder, err := strings.builder_make(allocator)
-	if err != nil do panic("Can't create string builder")
-
-	strings.write_string(&builder, fmt.tprintfln("Key: %v\r", event.key))
-	strings.write_string(&builder, fmt.tprintfln("Control: %v\r", event.control))
-	strings.write_string(&builder, fmt.tprintfln("Shift: %v\r", event.shift))
-	strings.write_string(&builder, fmt.tprintfln("Is letter: %v\r", event.is_letter))
-	strings.write_string(&builder, fmt.tprintfln("Is graphic: %v\r", event.is_graphic))
-	strings.write_string(
-		&builder,
-		fmt.tprintfln("Bytes hex: %x\r", event.buffer.data[:event.buffer.length]),
-	)
-	strings.write_string(
-		&builder,
-		fmt.tprintfln("Text: %s\r", event.buffer.data[:event.buffer.length]),
-	)
-
-	return strings.to_string(builder)
 }
 

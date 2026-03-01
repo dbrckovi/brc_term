@@ -1,11 +1,11 @@
 package brc_term
 
-import "brc_common"
+import bc "brc_common"
 import "core:strings"
 import "core:sys/posix"
 
 @(private)
-_ts: brc_common.TerminalState = {}
+_ts: bc.TerminalState = {}
 
 initialize :: proc {
 	initialize_default,
@@ -14,8 +14,8 @@ initialize :: proc {
 
 // Initializes the terminal with default settings
 // @returns size of the terminal (x=width, y=height)
-initialize_default :: proc() -> ([2]uint, Error) {
-	settings: brc_common.TerminalInitializationSettings = {
+initialize_default :: proc() -> ([2]uint, bc.Error) {
+	settings: bc.TerminalInitializationSettings = {
 		enable_ctrl_c = true,
 	}
 
@@ -25,10 +25,10 @@ initialize_default :: proc() -> ([2]uint, Error) {
 // Initializes the terminal with specific settings
 // @returns size of the terminal (x=width, y=height)
 initialize_with_settings :: proc(
-	settings: brc_common.TerminalInitializationSettings,
+	settings: bc.TerminalInitializationSettings,
 ) -> (
 	[2]uint,
-	Error,
+	bc.Error,
 ) {
 	ret: [2]uint
 
@@ -53,12 +53,12 @@ initialize_with_settings :: proc(
 }
 
 // returns current termina state and other various information
-get_terminal_info :: proc() -> brc_common.TerminalState {
+get_terminal_info :: proc() -> bc.TerminalState {
 	return _ts
 }
 
 // Deinitializes the terminal
-deinitialize :: proc() -> Error {
+deinitialize :: proc() -> bc.Error {
 	if !_ts.initialized do return .TERMINAL_NOT_INITIALIZED
 	reset_terminal_state() or_return
 	_ts.protocol = .None

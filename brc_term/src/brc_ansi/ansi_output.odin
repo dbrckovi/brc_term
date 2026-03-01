@@ -1,8 +1,11 @@
 package brc_ansi
 
+import bc "../brc_common"
 import "core:fmt"
 import "core:strings"
 import "core:terminal/ansi"
+import "core:unicode"
+import utf "core:unicode/utf8"
 
 //TODO: Check if color is supported and translate to color depth (terminal.color_enabled and terminal.color_depth)
 
