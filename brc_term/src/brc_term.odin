@@ -1,5 +1,6 @@
 package brc_term
 
+import "brc_ansi"
 import bc "brc_common"
 import "core:strings"
 import "core:sys/posix"

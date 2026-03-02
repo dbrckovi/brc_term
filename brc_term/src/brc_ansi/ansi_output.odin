@@ -11,12 +11,30 @@ import utf "core:unicode/utf8"
 
 // Sends ANSI code to terminal which enables mouse support
 enable_mouse_direct :: proc() {
-	fmt.print(ANY_EVENT + "h", SGR_MOUSE + "h")
+	fmt.print(ANY_EVENT_MOUSE + "h", SGR_MOUSE + "h")
 }
 
 // Sends ANSI code to terminal which disables mouse support
 disable_mouse_direct :: proc() {
-	fmt.print(ANY_EVENT + "l", SGR_MOUSE + "l")
+	fmt.print(ANY_EVENT_MOUSE + "l", SGR_MOUSE + "l")
+}
+
+// Sends ANSI code to terminal which enables focus detection
+enable_focus_detection_direct :: proc() {
+	fmt.print(FOCUS_REPORTING + "h")
+}
+
+// Sends ANSI code to terminal which disables focus detection
+disable_focus_detection_direct :: proc() {
+	fmt.print(FOCUS_REPORTING + "l")
+}
+
+enable_alternate_buffer_direct :: proc() {
+	fmt.print(ALTERNATE_BUFFER + "h")
+}
+
+disable_alternate_buffer_direct :: proc() {
+	fmt.print(ALTERNATE_BUFFER + "l")
 }
 
 clear_screen :: proc(sb: ^strings.Builder) {

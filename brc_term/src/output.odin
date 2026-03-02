@@ -41,6 +41,38 @@ disable_mouse :: proc() -> bc.Error {
 	return .NONE
 }
 
+// Enabled focus detection
+enable_focus :: proc() -> bc.Error {
+	if !_ts.initialized do return .TERMINAL_NOT_INITIALIZED
+	if _ts.frame_started do return .INVALID_WHILE_FRAME_STARTED
+	brc_ansi.enable_focus_detection_direct()
+	return .NONE
+}
+
+// Disables focus detection
+disable_focus :: proc() -> bc.Error {
+	if !_ts.initialized do return .TERMINAL_NOT_INITIALIZED
+	if _ts.frame_started do return .INVALID_WHILE_FRAME_STARTED
+	brc_ansi.disable_focus_detection_direct()
+	return .NONE
+}
+
+// Creates a new buffer
+enable_alternate_buffer :: proc() -> bc.Error {
+	if !_ts.initialized do return .TERMINAL_NOT_INITIALIZED
+	if _ts.frame_started do return .INVALID_WHILE_FRAME_STARTED
+	brc_ansi.enable_alternate_buffer_direct()
+	return .NONE
+}
+
+// Restores the original buffer
+disable_alternate_buffer :: proc() -> bc.Error {
+	if !_ts.initialized do return .TERMINAL_NOT_INITIALIZED
+	if _ts.frame_started do return .INVALID_WHILE_FRAME_STARTED
+	brc_ansi.disable_alternate_buffer_direct()
+	return .NONE
+}
+
 // Clears entire screen
 clear_screen :: proc() {
 	if _ts.initialized && _ts.frame_started {

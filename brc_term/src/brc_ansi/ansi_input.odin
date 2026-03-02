@@ -72,6 +72,7 @@ decode_ansi_key :: proc(input: ^bc.InputBuffer) -> (event: bc.KeyboardEvent, err
 
 	char, _ := utf.decode_rune_in_bytes(input.data[:input.length])
 
+	event.rune = char
 	event.key = bc.rune_to_key[unicode.to_upper(char)] or_else .None
 	event.holding_shift = unicode.is_upper(char)
 	event.is_letter = unicode.is_letter(char)

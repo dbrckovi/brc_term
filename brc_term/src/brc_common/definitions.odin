@@ -95,6 +95,7 @@ rune_to_key := map[rune]Key {
 	'*'  = .Asterisk,
 	'`'  = .Backtick,
 	'$'  = .Dollar,
+	'€'  = .Euro,
 	'!'  = .Exclamation,
 	'#'  = .Hash,
 	'%'  = .Percent,
@@ -149,14 +150,16 @@ InputEvent :: union {
 
 KeyboardEvent :: struct {
 	key:                Key,
+	rune:               rune,
 	buffer:             InputBuffer,
 	holding_control:    bool,
 	holding_shift:      bool,
 	is_escape_sequence: bool,
-	is_graphic:         bool,
-	is_letter:          bool,
+	//TODO: Remove or mark these because they are not reliable for diacritics
 	is_digit:           bool,
 	is_number:          bool,
+	is_graphic:         bool,
+	is_letter:          bool,
 	is_printable:       bool,
 	is_control:         bool,
 	is_space:           bool,
@@ -189,6 +192,7 @@ Key :: enum {
 	Asterisk,
 	Backtick,
 	Dollar,
+	Euro,
 	Exclamation,
 	Hash,
 	Percent,
@@ -269,6 +273,7 @@ Key :: enum {
 	F10,
 	F11,
 	F12,
+	Unrecognized, // Used for printable characters that are not in the enum because they are not on default keyboards. Usually a diacritic of some sort
 }
 
 InputBuffer :: struct {

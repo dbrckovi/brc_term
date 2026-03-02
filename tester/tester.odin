@@ -19,6 +19,12 @@ main :: proc() {
 	bt.enable_mouse()
 	defer bt.disable_mouse()
 
+	bt.enable_focus()
+	defer bt.disable_focus()
+
+	bt.enable_alternate_buffer()
+	defer bt.disable_alternate_buffer()
+
 	bt.clear_screen()
 
 	// simple_test()
@@ -261,15 +267,13 @@ visualize_keyboard_event :: proc(event: ^brc_common.KeyboardEvent) {
 	bt.write("[Control] ")
 
 	bt.set_fg_color(color_white)
-	bt.write(fmt.tprintf("%v ", event.key))
-
-	bt.write("\r\n")
+	bt.write(fmt.tprintf("%v\r\n", event.key))
 
 	bt.set_fg_color(color_off)
-	bt.write("Textual: ")
+	bt.write("Rune: ")
 
 	bt.set_fg_color(color_white)
-	bt.write(fmt.tprintf("%s\r\n", event.buffer.data[:event.buffer.length]))
+	bt.write(fmt.tprintf("%v\r\n", event.rune))
 
 	bt.set_fg_color(color_off)
 	bt.write("Bytes (hex): ")
