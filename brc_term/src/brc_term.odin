@@ -17,12 +17,8 @@ initialize :: proc {
 // @returns size of the terminal (x=width, y=height)
 initialize_default :: proc() -> ([2]uint, bc.Error) {
 	settings: bc.TerminalInitializationSettings = {
-<<<<<<< HEAD
 		enable_ctrl_c       = true,
 		synchronized_output = true, //Reportedly reduces flickering and artifacts but I'm yet to notice the difference
-=======
-		enable_ctrl_c = true,
->>>>>>> main
 	}
 
 	return initialize_with_settings(settings)

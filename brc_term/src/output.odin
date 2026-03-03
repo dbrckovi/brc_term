@@ -83,10 +83,6 @@ disable_alternate_buffer :: proc() -> bc.Error {
 	return .NONE
 }
 
-<<<<<<< HEAD
-
-=======
->>>>>>> main
 // Clears entire screen
 clear_screen :: proc() {
 	if _ts.initialized && _ts.frame_started {

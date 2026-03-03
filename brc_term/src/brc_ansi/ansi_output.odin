@@ -37,6 +37,15 @@ disable_alternate_buffer_direct :: proc() {
 	fmt.print(ALTERNATE_BUFFER + "l")
 }
 
+mark_synchronized_output_start :: proc(sb: ^strings.Builder) {
+	strings.write_string(sb, SYNCHRONIZED_OUTPUT_START)
+}
+
+mark_synchronized_output_end :: proc(sb: ^strings.Builder) {
+	strings.write_string(sb, SYNCHRONIZED_OUTPUT_END)
+}
+
+
 clear_screen :: proc(sb: ^strings.Builder) {
 	strings.write_string(sb, ansi.CSI + "H" + ansi.CSI + "2J")
 }

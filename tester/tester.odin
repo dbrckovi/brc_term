@@ -10,7 +10,7 @@ main :: proc() {
 
 	init_settings: brc_common.TerminalInitializationSettings = {
 		enable_ctrl_c       = true,
-		synchronized_output = true,
+		synchronized_output = true, //Reportedly reduces flickering and artifacts but I'm yet to notice the difference
 	}
 
 	size, error := bt.initialize(init_settings)
