@@ -1,4 +1,4 @@
-package brc_term
+package brc_common
 
 Error :: enum {
 	NONE, // No error

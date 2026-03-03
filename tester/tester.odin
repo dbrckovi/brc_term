@@ -9,7 +9,8 @@ import "core:time"
 main :: proc() {
 
 	init_settings: brc_common.TerminalInitializationSettings = {
-		enable_ctrl_c = true,
+		enable_ctrl_c       = true,
+		synchronized_output = true,
 	}
 
 	size, error := bt.initialize(init_settings)
@@ -19,10 +20,23 @@ main :: proc() {
 	bt.enable_mouse()
 	defer bt.disable_mouse()
 
+	bt.enable_focus()
+	defer bt.disable_focus()
+
+	bt.enable_alternate_buffer()
+	defer bt.disable_alternate_buffer()
+
+	bt.clear_screen()
+
 	// simple_test()
-	// frame_rate_test()
-	blocking_input_test()
+	frame_rate_test()
+	// blocking_input_test()
 	// non_blocking_input_test()
+
+	bt.start_frame()
+	bt.write("Press any key to exit...")
+	bt.end_frame()
+	bt.wait_input()
 }
 
 simple_test :: proc() {
@@ -46,10 +60,11 @@ frame_rate_test :: proc() {
 	frames: int
 
 	bt.hide_cursor()
+	color_offset: u8 = 0
+	line_x: uint = 0
 
 	for {
 		duration := time.diff(start, time.now())
-		if duration > time.Second * 10 do break
 
 		size, error := bt.start_frame()
 		if error != {} do panic(fmt.tprint(error))
@@ -57,12 +72,24 @@ frame_rate_test :: proc() {
 
 		for x: uint = 0; x < size.x; x += 1 {
 			for y: uint = 0; y < size.y; y += 1 {
-				bt.set_fg_color({u8(255 - x), u8(255 - y), u8(x + y)})
+				bt.set_cursor_position(x, y)
+				bt.set_fg_color({color_offset, 100, 100})
 				bt.write_rune('.')
 			}
 		}
 
+		if line_x >= size.x {
+			line_x = 0
+		}
+
+		bt.set_fg_color({255, 255, 255})
+		for y: uint = 0; y < size.y; y += 1 {
+			bt.set_cursor_position(line_x, y)
+			bt.write_rune('X')
+		}
+
 		bt.set_cursor_position(0, 0)
+		bt.set_fg_color({255, 255, 255})
 		seconds := time.duration_seconds(duration)
 		bt.write(fmt.tprint(f64(frames) / seconds))
 		bt.set_cursor_position(20, 0)
@@ -75,18 +102,29 @@ frame_rate_test :: proc() {
 			panic(fmt.tprint(input_error))
 		}
 
-		if input != nil {
-			break
+		if kb, ok := input.(brc_common.KeyboardEvent); ok {
+			if kb.key == .Esc {
+				break
+			}
 		}
 
 		frames += 1
 		free_all(context.temp_allocator)
+
+		color_offset += 1
+		line_x += 1
 	}
 
 	bt.show_cursor()
 }
 
 blocking_input_test :: proc() {
+
+	bt.start_frame()
+	bt.clear_screen()
+	visualize_keyboard_event(&brc_common.KeyboardEvent{})
+	bt.end_frame()
+
 	for {
 		bt.start_frame()
 		defer bt.end_frame()
@@ -99,13 +137,10 @@ blocking_input_test :: proc() {
 		}
 
 		if kb, ok := input.(brc_common.KeyboardEvent); ok {
-			bt.write(brc_common.to_string(&kb))
+			visualize_keyboard_event(&kb)
 			bt.write("\r\n")
 
 			if (kb.key == .Esc) {
-				bt.write("\r\n")
-				bt.write("Program exit")
-				bt.write("\r\n")
 				break
 			}
 
@@ -230,5 +265,73 @@ paint_sequence :: proc(sequence: []byte) {
 			bt.write(fmt.tprintf("%v ", rune(b)))
 		}
 	}
+}
+
+visualize_keyboard_event :: proc(event: ^brc_common.KeyboardEvent) {
+	// builder, err := strings.builder_make(context.allocator)
+	// if err != nil do panic("Can't create string builder")
+	// defer strings.builder_destroy(&builder)
+	previous_color := bt.get_terminal_info().last_fg_color
+	defer bt.set_fg_color(previous_color)
+
+	color_off: [3]u8 = {80, 80, 80}
+	color_on: [3]u8 = {80, 190, 255}
+	color_highlight: [3]u8 = {255, 255, 190}
+	color_white: [3]u8 = {255, 255, 255}
+
+	bt.set_fg_color(event.holding_shift ? color_on : color_off)
+	bt.write("[Shift] ")
+
+	bt.set_fg_color(event.holding_control ? color_on : color_off)
+	bt.write("[Control] ")
+
+	bt.set_fg_color(color_white)
+	bt.write(fmt.tprintf("%v\r\n", event.key))
+
+	bt.set_fg_color(color_off)
+	bt.write("Rune: ")
+
+	bt.set_fg_color(color_white)
+	bt.write(fmt.tprintf("%v\r\n", event.rune))
+
+	bt.set_fg_color(color_off)
+	bt.write("Bytes (hex): ")
+
+	bt.set_fg_color(color_white)
+	bt.write(fmt.tprintf("%x\r\n", event.buffer.data[:event.buffer.length]))
+
+	bt.write("\r\n")
+
+	bt.set_fg_color(event.is_escape_sequence ? color_highlight : color_off)
+	bt.write(" - Escape sequence\r\n")
+
+	bt.set_fg_color(event.is_graphic ? color_highlight : color_off)
+	bt.write(" - Graphic\r\n")
+
+	bt.set_fg_color(event.is_letter ? color_highlight : color_off)
+	bt.write(" - Letter\r\n")
+
+	bt.set_fg_color(event.is_digit ? color_highlight : color_off)
+	bt.write(" - Digit\r\n")
+
+	bt.set_fg_color(event.is_number ? color_highlight : color_off)
+	bt.write(" - Number\r\n")
+
+	bt.set_fg_color(event.is_printable ? color_highlight : color_off)
+	bt.write(" - Printable\r\n")
+
+	bt.set_fg_color(event.is_control ? color_highlight : color_off)
+	bt.write(" - Control character\r\n")
+
+	bt.set_fg_color(event.is_space ? color_highlight : color_off)
+	bt.write(" - Is space \r\n")
+
+	bt.set_fg_color(event.is_punctuation ? color_highlight : color_off)
+	bt.write(" - Punctuation \r\n")
+
+	bt.set_fg_color(event.is_symbol ? color_highlight : color_off)
+	bt.write(" - Synbol \r\n")
+
+	bt.write("\r\n\r\n")
 }
 

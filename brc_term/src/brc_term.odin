@@ -1,11 +1,12 @@
 package brc_term
 
-import "brc_common"
+import "brc_ansi"
+import bc "brc_common"
 import "core:strings"
 import "core:sys/posix"
 
 @(private)
-_ts: brc_common.TerminalState = {}
+_ts: bc.TerminalState = {}
 
 initialize :: proc {
 	initialize_default,
@@ -14,9 +15,10 @@ initialize :: proc {
 
 // Initializes the terminal with default settings
 // @returns size of the terminal (x=width, y=height)
-initialize_default :: proc() -> ([2]uint, Error) {
-	settings: brc_common.TerminalInitializationSettings = {
-		enable_ctrl_c = true,
+initialize_default :: proc() -> ([2]uint, bc.Error) {
+	settings: bc.TerminalInitializationSettings = {
+		enable_ctrl_c       = true,
+		synchronized_output = true, //Reportedly reduces flickering and artifacts but I'm yet to notice the difference
 	}
 
 	return initialize_with_settings(settings)
@@ -25,14 +27,15 @@ initialize_default :: proc() -> ([2]uint, Error) {
 // Initializes the terminal with specific settings
 // @returns size of the terminal (x=width, y=height)
 initialize_with_settings :: proc(
-	settings: brc_common.TerminalInitializationSettings,
+	settings: bc.TerminalInitializationSettings,
 ) -> (
 	[2]uint,
-	Error,
+	bc.Error,
 ) {
 	ret: [2]uint
 
 	if _ts.initialized do return ret, .TERMINAL_ALREADY_INITIALIZED
+	_ts.synchronized_output = settings.synchronized_output
 
 	state, get_state_ok := get_terminal_state()
 	if !get_state_ok do return ret, .GET_TERMINAL_STATE_FAILED
@@ -53,12 +56,12 @@ initialize_with_settings :: proc(
 }
 
 // returns current termina state and other various information
-get_terminal_info :: proc() -> brc_common.TerminalState {
+get_terminal_info :: proc() -> bc.TerminalState {
 	return _ts
 }
 
 // Deinitializes the terminal
-deinitialize :: proc() -> Error {
+deinitialize :: proc() -> bc.Error {
 	if !_ts.initialized do return .TERMINAL_NOT_INITIALIZED
 	reset_terminal_state() or_return
 	_ts.protocol = .None

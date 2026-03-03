@@ -1,19 +1,48 @@
 package brc_ansi
 
+import bc "../brc_common"
 import "core:fmt"
 import "core:strings"
 import "core:terminal/ansi"
+import "core:unicode"
+import utf "core:unicode/utf8"
 
 //TODO: Check if color is supported and translate to color depth (terminal.color_enabled and terminal.color_depth)
 
 // Sends ANSI code to terminal which enables mouse support
 enable_mouse_direct :: proc() {
-	fmt.print(ANY_EVENT + "h", SGR_MOUSE + "h")
+	fmt.print(ANY_EVENT_MOUSE + "h", SGR_MOUSE + "h")
 }
 
 // Sends ANSI code to terminal which disables mouse support
 disable_mouse_direct :: proc() {
-	fmt.print(ANY_EVENT + "l", SGR_MOUSE + "l")
+	fmt.print(ANY_EVENT_MOUSE + "l", SGR_MOUSE + "l")
+}
+
+// Sends ANSI code to terminal which enables focus detection
+enable_focus_detection_direct :: proc() {
+	fmt.print(FOCUS_REPORTING + "h")
+}
+
+// Sends ANSI code to terminal which disables focus detection
+disable_focus_detection_direct :: proc() {
+	fmt.print(FOCUS_REPORTING + "l")
+}
+
+enable_alternate_buffer_direct :: proc() {
+	fmt.print(ALTERNATE_BUFFER + "h")
+}
+
+disable_alternate_buffer_direct :: proc() {
+	fmt.print(ALTERNATE_BUFFER + "l")
+}
+
+mark_synchronized_output_start :: proc(sb: ^strings.Builder) {
+	strings.write_string(sb, SYNCHRONIZED_OUTPUT_START)
+}
+
+mark_synchronized_output_end :: proc(sb: ^strings.Builder) {
+	strings.write_string(sb, SYNCHRONIZED_OUTPUT_END)
 }
 
 clear_screen :: proc(sb: ^strings.Builder) {
