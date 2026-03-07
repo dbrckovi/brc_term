@@ -10,7 +10,7 @@ main :: proc() {
 	init_settings: bc.TerminalInitializationSettings = {
 		enable_ctrl_c       = true,
 		synchronized_output = true, //Reportedly reduces flickering and artifacts but I'm yet to notice the difference
-		fps_limit           = 240,
+		fps_limit           = 200,
 	}
 
 	size, error := bt.initialize(init_settings)
@@ -91,6 +91,8 @@ demo_form :: proc() {
 
 		bt.end_frame()
 		frame_count += 1
+
+		free_all(context.temp_allocator)
 	}
 }
 

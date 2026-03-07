@@ -124,7 +124,7 @@ rune_to_key := map[rune]Key {
 TerminalInitializationSettings :: struct {
 	enable_ctrl_c:       bool,
 	synchronized_output: bool,
-	fps_limit:           uint, //recommended value is monitor's refresh rate or slightly higher
+	fps_limit:           uint, //Limit FPS and CPU usage. (Actual frame rate will always be lower than this)
 }
 
 Rectangle :: struct {
