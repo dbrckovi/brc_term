@@ -5,6 +5,7 @@ package brc_common
 import "core:fmt"
 import "core:strings"
 import "core:sys/posix"
+import "core:time"
 
 // These are control characters ASCII table
 // I renamed them based on function they have in this library
@@ -124,6 +125,7 @@ rune_to_key := map[rune]Key {
 TerminalInitializationSettings :: struct {
 	enable_ctrl_c:       bool,
 	synchronized_output: bool,
+	fps_limit:           uint, //recommended value is monitor's refresh rate or slightly higher
 }
 
 TerminalState :: struct {
@@ -134,7 +136,10 @@ TerminalState :: struct {
 	frame_started:       bool, // Indicates that frame has been started.
 	last_fg_color:       [3]u8,
 	last_bg_color:       [3]u8,
-	synchronized_output: bool, //Reportedly reduces flickering and artifacts but I'm yet to notice the difference
+	synchronized_output: bool, // Reportedly reduces flickering and artifacts but I'm yet to notice the difference
+	size:                [2]uint, // Size of the terminal. Updated when get_terminal_size is called
+	fps_limit:           uint, // if this is > 0 end_frame will block until enough time has passed since start_frame to approximate this number
+	last_frame_time:     time.Time,
 }
 
 EventProtocol :: enum {

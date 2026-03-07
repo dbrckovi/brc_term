@@ -11,6 +11,7 @@ main :: proc() {
 	init_settings: brc_common.TerminalInitializationSettings = {
 		enable_ctrl_c       = true,
 		synchronized_output = true, //Reportedly reduces flickering and artifacts but I'm yet to notice the difference
+		fps_limit           = 240,
 	}
 
 	size, error := bt.initialize(init_settings)
@@ -28,8 +29,9 @@ main :: proc() {
 
 	bt.clear_screen()
 
+	demo_form()
 	// simple_test()
-	frame_rate_test()
+	// frame_rate_test()
 	// blocking_input_test()
 	// non_blocking_input_test()
 
@@ -38,6 +40,55 @@ main :: proc() {
 	bt.end_frame()
 	bt.wait_input()
 }
+
+demo_form :: proc() {
+	bt.hide_cursor()
+	defer bt.show_cursor()
+
+	fps_start_time := time.now()
+	frame_count: int = 0
+	fps: int = 0
+
+	for {
+		input, input_error := bt.get_input()
+		if input_error != .NONE {
+			panic(fmt.tprint(input_error))
+		}
+
+		if kb, ok := input.(brc_common.KeyboardEvent); ok {
+			if kb.key == .Esc {
+				break
+			}
+		}
+
+		duration := time.diff(fps_start_time, time.now())
+		if duration >= time.Second {
+			fps = frame_count
+			fps_start_time = time.now()
+			frame_count = 0
+		}
+
+		size, _ := bt.start_frame()
+		bt.clear_screen()
+
+		bt.draw_window({0, 5}, .Normal)
+		bt.draw_window({5, 5}, .Bold)
+		bt.draw_window({10, 5}, .Double)
+		bt.draw_window({15, 5}, .Bold_Horizontal)
+		bt.draw_window({20, 5}, .Bold_Vertical)
+		bt.draw_window({25, 5}, .Double_Horizontal)
+		bt.draw_window({30, 5}, .Double_Vertical)
+		bt.draw_window({35, 5}, .Rounded)
+		bt.draw_window({40, 5}, .PoorMans)
+
+		bt.set_cursor_position(0, size.y - 1)
+		bt.write(fmt.tprint("Size:", size, "FPS:", fps))
+
+		bt.end_frame()
+		frame_count += 1
+	}
+}
+
 
 simple_test :: proc() {
 	bt.start_frame()

@@ -6,35 +6,6 @@ import "core:fmt"
 import "core:os"
 import "core:strings"
 
-// Clears buffers of the last frame and enables drawing/output operations
-start_frame :: proc() -> ([2]uint, bc.Error) {
-	if !_ts.initialized do return {0, 0}, .TERMINAL_NOT_INITIALIZED
-	if _ts.frame_started do return {0, 0}, .FRAME_ALREADY_STARTED
-	strings.builder_reset(&_ts.frame_builder)
-
-	if _ts.synchronized_output {
-		brc_ansi.mark_synchronized_output_start(&_ts.frame_builder)
-	}
-
-	_ts.frame_started = true
-	return get_terminal_size()
-}
-
-// Sends frame buffer to the stdout (screen) and disables drawing/output operations
-end_frame :: proc() -> bc.Error {
-	if !_ts.initialized do return .TERMINAL_NOT_INITIALIZED
-	if !_ts.frame_started do return .FRAME_NOT_STARTED
-
-	if _ts.synchronized_output {
-		brc_ansi.mark_synchronized_output_end(&_ts.frame_builder)
-	}
-
-	fmt.print(strings.to_string(_ts.frame_builder))
-	os.flush(os.stdout)
-	_ts.frame_started = false
-	return .NONE
-}
-
 // Enables mouse support
 enable_mouse :: proc() -> bc.Error {
 	if !_ts.initialized do return .TERMINAL_NOT_INITIALIZED
