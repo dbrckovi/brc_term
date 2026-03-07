@@ -18,7 +18,7 @@ initialize :: proc {
 
 // Initializes the terminal with default settings
 // @returns size of the terminal (x=width, y=height)
-initialize_default :: proc() -> ([2]uint, bc.Error) {
+initialize_default :: proc() -> ([2]int, bc.Error) {
 	settings: bc.TerminalInitializationSettings = {
 		enable_ctrl_c       = true,
 		synchronized_output = true, //Reportedly reduces flickering and artifacts but I'm yet to notice the difference
@@ -33,10 +33,10 @@ initialize_default :: proc() -> ([2]uint, bc.Error) {
 initialize_with_settings :: proc(
 	settings: bc.TerminalInitializationSettings,
 ) -> (
-	[2]uint,
+	[2]int,
 	bc.Error,
 ) {
-	ret: [2]uint
+	ret: [2]int
 
 	if _ts.initialized do return ret, .TERMINAL_ALREADY_INITIALIZED
 	_ts.synchronized_output = settings.synchronized_output
@@ -61,7 +61,7 @@ initialize_with_settings :: proc(
 }
 
 // Clears buffers of the last frame and enables drawing/output operations
-start_frame :: proc() -> ([2]uint, bc.Error) {
+start_frame :: proc() -> ([2]int, bc.Error) {
 	if !_ts.initialized do return {0, 0}, .TERMINAL_NOT_INITIALIZED
 	if _ts.frame_started do return {0, 0}, .FRAME_ALREADY_STARTED
 	strings.builder_reset(&_ts.frame_builder)

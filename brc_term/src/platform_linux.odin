@@ -50,8 +50,8 @@ reset_terminal_state :: proc() -> bc.Error {
 }
 
 // gets current width and height of terminal buffer (x = width, y = height) in characters
-get_terminal_size :: proc() -> ([2]uint, bc.Error) {
-	ret: [2]uint
+get_terminal_size :: proc() -> ([2]int, bc.Error) {
+	ret: [2]int
 
 	winsize :: struct {
 		ws_row, ws_col:       c.ushort,
@@ -63,8 +63,8 @@ get_terminal_size :: proc() -> ([2]uint, bc.Error) {
 		return ret, .GET_WINDOW_SIZE_FAILED
 	}
 
-	ret.x = uint(w.ws_col)
-	ret.y = uint(w.ws_row)
+	ret.x = int(w.ws_col)
+	ret.y = int(w.ws_row)
 	return ret, .NONE
 }
 

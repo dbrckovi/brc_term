@@ -2,10 +2,6 @@ package brc_term
 
 import "brc_ansi"
 import bc "brc_common"
-import "core:strings"
-import ansi "core:terminal/ansi"
-import "core:unicode"
-import utf "core:unicode/utf8"
 
 get_input :: proc() -> (event: bc.InputEvent, error: bc.Error) {
 	if !_ts.initialized do return {}, .TERMINAL_NOT_INITIALIZED

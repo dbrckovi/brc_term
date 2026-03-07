@@ -1,11 +1,8 @@
 package brc_ansi
 
-import bc "../brc_common"
 import "core:fmt"
 import "core:strings"
 import "core:terminal/ansi"
-import "core:unicode"
-import utf "core:unicode/utf8"
 
 //TODO: Check if color is supported and translate to color depth (terminal.color_enabled and terminal.color_depth)
 
@@ -57,11 +54,11 @@ clear_screen_direct :: proc() {
 // Creates ansi sequence for moving cursor to specified location and adds it to string builder
 // X - horizontal 0-based coordinate
 // Y - vertical 0-based coordinate
-set_cursor_position :: proc(sb: ^strings.Builder, x, y: uint) {
+set_cursor_position :: proc(sb: ^strings.Builder, x, y: int) {
 	strings.write_string(sb, ansi.CSI)
-	strings.write_uint(sb, y + 1)
+	strings.write_uint(sb, uint(y) + 1)
 	strings.write_rune(sb, ';')
-	strings.write_uint(sb, x + 1)
+	strings.write_uint(sb, uint(x) + 1)
 	strings.write_string(sb, ansi.CUP)
 }
 

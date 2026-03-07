@@ -1,6 +1,7 @@
 #+feature dynamic-literals
 package brc_term
 
+import bc "brc_common"
 import "core:strings"
 
 STUB_LEFT :: '╴'
@@ -161,83 +162,90 @@ line_charset := map[LineStyle]LineCharSet {
 	},
 }
 
-// Draws a rectangle
-draw_rectangle :: proc(rect: [4]uint, line: LineStyle = .Normal) {
+// Draws a rectangle. Any off-screen sections are cropped-off. Minimum size of rectangle is 2x2
+draw_rectangle :: proc(rect: bc.Rectangle, line: LineStyle = .Normal) {
+	left := rect.loc.x
+	right := rect.loc.x + int(rect.w) - 1
+	top := rect.loc.y
+	bottom := rect.loc.y + int(rect.h) - 1
 
-}
-
-// Draws a "window" wthich uses all characters in a given LineStyle character set
-draw_window :: proc(loc: [2]uint, line: LineStyle = .Normal) {
+	if left >= _ts.size.x ||
+	   right < 0 ||
+	   top >= _ts.size.y ||
+	   bottom < 0 ||
+	   rect.w < 2 ||
+	   rect.h < 2 {
+		return
+	}
 
 	charset := line_charset[line]
+	//top-left corner
+	if left >= 0 && left < _ts.size.x && top >= 0 && top < _ts.size.y {
+		set_cursor_position(left, top)
+		write(charset.top_left)
+	}
 
-	set_cursor_position(loc.x, loc.y)
-	write(charset.top_left)
-	write(charset.horizontal)
-	write(charset.junction_down)
-	write(charset.horizontal)
-	write(charset.top_right)
+	//top-right corner
+	if right >= 0 && right < _ts.size.x && top >= 0 && top < _ts.size.y {
+		set_cursor_position(right, top)
+		write(charset.top_right)
+	}
 
-	set_cursor_position(loc.x, loc.y + 1)
-	write(charset.vertical)
-	write(" ")
-	write(charset.vertical)
-	write(" ")
-	write(charset.vertical)
+	//bottom-left corner
+	if left >= 0 && left < _ts.size.x && bottom >= 0 && bottom < _ts.size.y {
+		set_cursor_position(left, bottom)
+		write(charset.bottom_left)
+	}
 
-	set_cursor_position(loc.x, loc.y + 2)
-	write(charset.junction_right)
-	write(charset.horizontal)
-	write(charset.cross)
-	write(charset.horizontal)
-	write(charset.junction_left)
+	//bottom-right corner
+	if right >= 0 && right < _ts.size.x && bottom >= 0 && bottom < _ts.size.y {
+		set_cursor_position(right, bottom)
+		write(charset.bottom_right)
+	}
 
-	set_cursor_position(loc.x, loc.y + 3)
-	write(charset.vertical)
-	write(" ")
-	write(charset.vertical)
-	write(" ")
-	write(charset.vertical)
-
-	set_cursor_position(loc.x, loc.y + 4)
-	write(charset.bottom_left)
-	write(charset.horizontal)
-	write(charset.junction_up)
-	write(charset.horizontal)
-	write(charset.bottom_right)
+	draw_horizontal_line(rect.loc + {1, 0}, uint(rect.w) - 2, line)
+	draw_horizontal_line(rect.loc + {1, int(rect.h) - 1}, uint(rect.w) - 2, line)
+	draw_vertical_line(rect.loc + {0, 1}, uint(rect.h) - 2, line)
+	draw_vertical_line(rect.loc + {int(rect.w) - 1, 1}, uint(rect.h) - 2, line)
 }
 
 // Draws a horizontal line. Any off-screen sections are cropped-off
-draw_horizontal_line :: proc(location: [2]uint, length: uint, line: LineStyle = .Normal) {
-	if length == 0 || location.x >= _ts.size.x {
+draw_horizontal_line :: proc(location: [2]int, length: uint, line: LineStyle = .Normal) {
+	if length == 0 || location.x >= _ts.size.x || location.y < 0 || location.y >= _ts.size.y {
 		return
 	}
 
-	x_end := location.x + length - 1
-	if x_end >= _ts.size.x {
-		x_end = _ts.size.x - 1
+	start := location.x > 0 ? location.x : 0
+	end := location.x + int(length) - 1
+	end = end >= _ts.size.x ? _ts.size.x - 1 : end
+
+	if start >= _ts.size.x || end < 0 {
+		return
 	}
 
 	charset := line_charset[line]
 
-	set_cursor_position(location.x, location.y)
-	write(strings.repeat(charset.horizontal, int(x_end - location.x + 1), context.temp_allocator))
+	set_cursor_position(start, location.y)
+	write(strings.repeat(charset.horizontal, int(end - start + 1), context.temp_allocator))
 }
 
 // Draws a vertical line. Any off-screen sections are cropped-off
-draw_vertical_line :: proc(location: [2]uint, length: uint, line: LineStyle = .Normal) {
-	if length == 0 || location.y >= _ts.size.y {
+draw_vertical_line :: proc(location: [2]int, length: uint, line: LineStyle = .Normal) {
+	if length == 0 || location.y >= _ts.size.y || location.x < 0 || location.x >= _ts.size.x {
 		return
 	}
 
-	y_end := location.y + length - 1
-	if y_end >= _ts.size.y {
-		y_end = _ts.size.y - 1
+	start := location.y > 0 ? location.y : 0
+	end := location.y + int(length) - 1
+	end = end >= _ts.size.y ? _ts.size.y - 1 : end
+
+	if start >= _ts.size.y || end < 0 {
+		return
 	}
 
 	charset := line_charset[line]
 
-	for y in location.y ..= y_end {
+	for y in start ..= end {
 		set_cursor_position(location.x, y)
 		write(charset.vertical)
 	}

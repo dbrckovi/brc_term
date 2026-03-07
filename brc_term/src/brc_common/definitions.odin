@@ -2,7 +2,6 @@
 
 package brc_common
 
-import "core:fmt"
 import "core:strings"
 import "core:sys/posix"
 import "core:time"
@@ -128,6 +127,12 @@ TerminalInitializationSettings :: struct {
 	fps_limit:           uint, //recommended value is monitor's refresh rate or slightly higher
 }
 
+Rectangle :: struct {
+	loc: [2]int,
+	w:   u16, // u16 because everything works with int, so even if this gets decremented below 0, it will be below int.max when it wraps around
+	h:   u16, // u16 because everything works with int, so even if this gets decremented below 0, it will be below int.max when it wraps around
+}
+
 TerminalState :: struct {
 	initialized:         bool,
 	protocol:            EventProtocol,
@@ -137,7 +142,7 @@ TerminalState :: struct {
 	last_fg_color:       [3]u8,
 	last_bg_color:       [3]u8,
 	synchronized_output: bool, // Reportedly reduces flickering and artifacts but I'm yet to notice the difference
-	size:                [2]uint, // Size of the terminal. Updated when get_terminal_size is called
+	size:                [2]int, // Size of the terminal. Updated when get_terminal_size is called
 	fps_limit:           uint, // if this is > 0 end_frame will block until enough time has passed since start_frame to approximate this number
 	last_frame_time:     time.Time,
 }

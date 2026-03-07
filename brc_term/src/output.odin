@@ -2,8 +2,6 @@ package brc_term
 
 import "brc_ansi"
 import bc "brc_common"
-import "core:fmt"
-import "core:os"
 import "core:strings"
 
 // Enables mouse support
@@ -64,7 +62,7 @@ clear_screen :: proc() {
 }
 
 // Moves the cursor to specified coordinates
-set_cursor_position :: proc(x, y: uint) -> bc.Error {
+set_cursor_position :: proc(x, y: int) -> bc.Error {
 	if !_ts.initialized do return .TERMINAL_NOT_INITIALIZED
 	if !_ts.frame_started do return .FRAME_NOT_STARTED
 	brc_ansi.set_cursor_position(&_ts.frame_builder, x, y)
