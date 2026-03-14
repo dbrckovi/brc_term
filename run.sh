@@ -2,4 +2,11 @@
 
 OUT_DIR="out"
 ./build.sh
-./out/tester.bin
+
+if [[ $TERM == "xterm-kitty" ]]
+then
+  kitty @ launch --type=tab --cwd current ./out/tester.bin > /dev/null
+  sleep 0.1
+else
+  ./out/tester.bin
+fi
