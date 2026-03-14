@@ -133,6 +133,19 @@ Rectangle :: struct {
 	h:   u16, // u16 because everything works with int, so even if this gets decremented below 0, it will be below int.max when it wraps around
 }
 
+TermCell :: struct {
+	char: rune,
+	fg:   [3]u8,
+	bg:   [3]u8,
+	//TODO: style flags
+}
+
+CellBuffer :: struct {
+	cells: [dynamic]TermCell,
+	w:     int,
+	h:     int,
+}
+
 TerminalState :: struct {
 	initialized:         bool,
 	protocol:            EventProtocol,
@@ -291,5 +304,11 @@ Key :: enum {
 InputBuffer :: struct {
 	data:   [512]byte,
 	length: int,
+}
+
+init_cell_buffer :: proc(buffer: ^CellBuffer, width, height: int) {
+	//TOOD: do
+	new_size := width * height
+	resize(&buffer.cells, new_size)
 }
 
